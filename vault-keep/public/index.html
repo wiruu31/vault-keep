@@ -1,0 +1,127 @@
+<!doctype html>
+<html lang="id">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="color-scheme" content="dark">
+  <title>Vault Keep</title>
+  <link rel="stylesheet" href="/style.css">
+</head>
+<body>
+  <section id="gate" class="gate" aria-labelledby="gate-title">
+    <form id="gate-form" class="gate-card" autocomplete="off" novalidate>
+      <p class="brand">VAULT KEEP <span class="ver">v1.0.0</span></p>
+      <h1 id="gate-title">Buka vault</h1>
+      <p id="gate-hint" class="muted">Masukkan master password untuk membuka vault.json.</p>
+
+      <label for="gate-pass">Master password</label>
+      <div class="field-row">
+        <input id="gate-pass" type="password" autocomplete="current-password" spellcheck="false">
+        <button type="button" class="btn ghost" id="gate-toggle" aria-pressed="false">Lihat</button>
+      </div>
+
+      <div id="gate-confirm-wrap" hidden>
+        <label for="gate-confirm">Ulangi master password</label>
+        <input id="gate-confirm" type="password" autocomplete="new-password" spellcheck="false">
+        <p class="muted small">Minimal 12 karakter. Master password tidak disimpan di mana pun. Kalau lupa, isi vault tidak bisa dipulihkan.</p>
+      </div>
+
+      <p id="gate-error" class="error" role="alert" hidden></p>
+      <button type="submit" class="btn primary" id="gate-submit">Buka</button>
+    </form>
+  </section>
+
+  <div id="app" class="app" hidden>
+    <header class="bar">
+      <p class="brand">VAULT KEEP</p>
+      <div class="search">
+        <label for="q" class="sr">Cari akun</label>
+        <input id="q" type="search" placeholder="Cari platform, username, catatan" autocomplete="off">
+      </div>
+      <label for="cat" class="sr">Filter kategori</label>
+      <select id="cat"></select>
+      <button type="button" class="btn primary" id="btn-new">Tambah</button>
+      <a class="btn ghost" id="btn-export" href="/api/export" download="vault.json">Unduh vault.json</a>
+      <button type="button" class="btn ghost" id="btn-lock">Kunci</button>
+    </header>
+
+    <main class="work">
+      <section class="ledger" aria-labelledby="ledger-title">
+        <h1 id="ledger-title" class="sr">Daftar akun</h1>
+        <div class="cols" aria-hidden="true"><span>PLATFORM</span><span>USERNAME</span><span class="c-cat">KATEGORI</span><span class="c-date">DIUBAH</span></div>
+        <p id="count" class="muted small" aria-live="polite"></p>
+        <ul id="rows" class="rows"></ul>
+        <div id="empty" class="empty" hidden>
+          <p id="empty-title"></p>
+          <p id="empty-body" class="muted"></p>
+        </div>
+        <p id="loading" class="empty muted" hidden>Memuat akun...</p>
+      </section>
+
+      <aside id="panel" class="panel" aria-label="Detail akun" hidden>
+        <div id="detail" hidden>
+          <div class="panel-head">
+            <h2 id="d-title"></h2>
+            <button type="button" class="btn ghost" id="d-close">Tutup</button>
+          </div>
+          <dl class="kv">
+            <dt>Username</dt><dd><span id="d-user"></span><button type="button" class="btn ghost small-btn" id="d-copy-user">Salin</button></dd>
+            <dt>Password</dt><dd><span id="d-pass" class="mono-pass"></span>
+              <button type="button" class="btn ghost small-btn" id="d-reveal" aria-pressed="false">Lihat</button>
+              <button type="button" class="btn ghost small-btn" id="d-copy-pass">Salin</button></dd>
+            <dt>Kategori</dt><dd id="d-cat"></dd>
+            <dt>URL</dt><dd id="d-url"></dd>
+            <dt>Catatan</dt><dd id="d-notes" class="notes"></dd>
+            <dt>Diubah</dt><dd id="d-date"></dd>
+          </dl>
+          <div class="actions">
+            <button type="button" class="btn primary" id="d-edit">Edit</button>
+            <button type="button" class="btn danger" id="d-delete">Hapus</button>
+          </div>
+          <div id="d-confirm" class="confirm" hidden>
+            <p>Hapus akun ini dari vault? Tidak bisa dibatalkan.</p>
+            <button type="button" class="btn danger" id="d-yes">Ya, hapus</button>
+            <button type="button" class="btn ghost" id="d-no">Batal</button>
+          </div>
+        </div>
+
+        <form id="form" hidden novalidate autocomplete="off">
+          <div class="panel-head">
+            <h2 id="f-title"></h2>
+            <button type="button" class="btn ghost" id="f-close">Batal</button>
+          </div>
+          <label for="f-platform">Platform</label>
+          <input id="f-platform" maxlength="120" required>
+          <label for="f-user">Username atau email</label>
+          <input id="f-user" maxlength="200" spellcheck="false">
+          <label for="f-pass">Password</label>
+          <div class="field-row">
+            <input id="f-pass" type="password" maxlength="1000" spellcheck="false" required>
+            <button type="button" class="btn ghost" id="f-toggle" aria-pressed="false">Lihat</button>
+          </div>
+          <fieldset class="gen">
+            <legend>Buat password acak</legend>
+            <div class="field-row">
+              <label for="g-len" class="inline">Panjang</label>
+              <input id="g-len" type="number" min="12" max="64" value="20">
+              <label class="check"><input id="g-sym" type="checkbox" checked> Simbol</label>
+              <button type="button" class="btn ghost" id="g-make">Buat</button>
+            </div>
+          </fieldset>
+          <label for="f-cat">Kategori</label>
+          <select id="f-cat"></select>
+          <label for="f-url">URL (opsional)</label>
+          <input id="f-url" maxlength="500" inputmode="url" spellcheck="false">
+          <label for="f-notes">Catatan (opsional)</label>
+          <textarea id="f-notes" rows="3" maxlength="2000"></textarea>
+          <p id="f-error" class="error" role="alert" hidden></p>
+          <button type="submit" class="btn primary" id="f-save">Simpan</button>
+        </form>
+      </aside>
+    </main>
+  </div>
+
+  <p id="toast" class="toast" role="status" aria-live="polite" hidden></p>
+  <script src="/app.js" defer></script>
+</body>
+</html>
