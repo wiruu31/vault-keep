@@ -1,0 +1,403 @@
+<!doctype html>
+<html lang="id">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="color-scheme" content="light">
+<title>Vault Keep Portable</title>
+<style>
+/* Card: terang krem, satu kolom untuk HP, teal sebagai warna isi. Teks teal memakai versi gelap agar kontrasnya lolos. */
+:root {
+  --cream: #faf5e9;
+  --card: #ffffff;
+  --ink: #1f2a2a;
+  --muted: #55615f;
+  --edge: #7a8584;
+  --soft: #e2dccb;
+  --teal: #2ec4b6;
+  --teal-ink: #0b6e66;
+  --error: #a32a1d;
+}
+*, *::before, *::after { box-sizing: border-box; }
+html { -webkit-text-size-adjust: 100%; }
+body {
+  margin: 0;
+  background: var(--cream);
+  color: var(--ink);
+  font: 17px/1.5 system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
+  min-height: 100vh;
+  min-height: 100dvh;
+}
+[hidden] { display: none !important; }
+.sr { position: absolute; width: 1px; height: 1px; overflow: hidden; clip: rect(0 0 0 0); white-space: nowrap; }
+main { width: 100%; max-width: 560px; margin: 0 auto; padding: 20px 16px 64px; }
+h1 { font-size: 26px; line-height: 1.2; margin: 0 0 8px; }
+p { margin: 0 0 12px; }
+.muted { color: var(--muted); }
+.brand { font-weight: 700; color: var(--teal-ink); margin: 0 0 20px; }
+.error { color: var(--error); font-weight: 600; overflow-wrap: anywhere; }
+
+label { display: block; margin: 18px 0 6px; font-weight: 600; }
+input, select {
+  width: 100%;
+  min-height: 52px;
+  padding: 12px 14px;
+  background: var(--card);
+  color: var(--ink);
+  border: 2px solid var(--edge);
+  border-radius: 10px;
+  font: inherit;
+}
+select { cursor: pointer; }
+:focus-visible { outline: 3px solid var(--teal-ink); outline-offset: 2px; }
+
+.btn {
+  display: inline-flex; align-items: center; justify-content: center;
+  min-height: 52px; padding: 0 20px;
+  background: var(--card); color: var(--ink);
+  border: 2px solid var(--ink); border-radius: 10px;
+  font: inherit; font-weight: 700; cursor: pointer;
+}
+.btn:hover { background: var(--soft); }
+.btn:active { transform: translateY(1px); }
+.btn:disabled { opacity: .55; cursor: not-allowed; }
+.btn.main { background: var(--teal); border-color: var(--teal); color: var(--ink); }
+.btn.main:hover { background: #55d6ca; }
+.btn.wide { width: 100%; margin-top: 20px; }
+
+.check-row { display: flex; gap: 10px; align-items: center; font-weight: 400; min-height: 44px; cursor: pointer; }
+.check-row input { width: 24px; min-height: 24px; height: 24px; cursor: pointer; accent-color: var(--teal-ink); }
+.pick {
+  display: flex; align-items: center; justify-content: center; text-align: center;
+  min-height: 52px; padding: 12px 20px; margin-top: 18px;
+  background: var(--card); border: 2px dashed var(--edge); border-radius: 10px;
+  font-weight: 600; cursor: pointer; overflow-wrap: anywhere;
+}
+.pick:hover { background: var(--soft); }
+.pick:focus-within { outline: 3px solid var(--teal-ink); outline-offset: 2px; }
+.pick input { position: absolute; width: 1px; height: 1px; opacity: 0; }
+
+.top { display: flex; justify-content: space-between; align-items: center; gap: 12px; margin-bottom: 8px; }
+.top .brand { margin: 0; }
+.tools { position: sticky; top: 0; z-index: 2; background: var(--cream); padding: 8px 0 12px; }
+.tools select { margin-top: 8px; }
+#count { margin: 8px 0 12px; }
+
+.cards { list-style: none; margin: 0; padding: 0; display: grid; gap: 14px; }
+.acct { background: var(--card); border: 2px solid var(--soft); border-radius: 14px; padding: 16px; }
+.acct h2 { font-size: 21px; margin: 0; overflow-wrap: anywhere; }
+.acct .who { margin: 2px 0 0; color: var(--muted); overflow-wrap: anywhere; }
+.acct .cat { margin: 2px 0 0; font-size: 14px; color: var(--teal-ink); font-weight: 600; }
+.pw { margin: 14px 0 0; padding: 12px 14px; background: var(--cream); border-radius: 10px; font: 17px/1.4 ui-monospace, Menlo, Consolas, monospace; overflow-wrap: anywhere; word-break: break-all; }
+.btns { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 8px; margin-top: 12px; }
+.btns .btn { padding: 0 8px; font-size: 15px; }
+.extra { margin-top: 12px; padding-top: 12px; border-top: 1px solid var(--soft); }
+.extra p { margin: 0 0 6px; overflow-wrap: anywhere; }
+.extra a { color: var(--teal-ink); font-weight: 600; }
+.notes { white-space: pre-wrap; }
+.empty { padding: 32px 4px; }
+.empty p:first-child { font-weight: 700; }
+
+.toast {
+  position: fixed; left: 50%; bottom: 20px; transform: translateX(-50%);
+  max-width: calc(100vw - 32px); margin: 0; padding: 12px 18px;
+  background: var(--ink); color: #fff; border-radius: 10px; font-weight: 600; z-index: 10;
+}
+@media (min-width: 640px) { main { padding-top: 40px; } }
+@media (prefers-reduced-motion: reduce) { * { transition: none !important; animation: none !important; } .btn:active { transform: none; } }
+</style>
+</head>
+<body>
+<main>
+  <section id="gate" aria-labelledby="gate-title">
+    <p class="brand">Vault Keep Portable v1.0.0</p>
+    <h1 id="gate-title">Buka vault.json</h1>
+    <p class="muted">Mode baca saja. Pilih file vault.json, lalu masukkan master password. Semua diproses di perangkat ini dan tidak ada yang dikirim ke internet.</p>
+
+    <form id="gate-form" novalidate autocomplete="off">
+      <label class="pick" for="file"><span id="file-name">Pilih file vault.json</span>
+        <input id="file" type="file" accept=".json,application/json">
+      </label>
+      <label for="pass">Master password</label>
+      <input id="pass" type="password" autocomplete="current-password" spellcheck="false">
+      <label class="check-row" for="show-pass">
+        <input id="show-pass" type="checkbox"> Tampilkan password
+      </label>
+      <p id="gate-error" class="error" role="alert" hidden></p>
+      <button type="submit" id="open" class="btn main wide">Buka vault</button>
+    </form>
+  </section>
+
+  <section id="app" hidden aria-label="Daftar akun">
+    <div class="top">
+      <p class="brand">Vault Keep Portable</p>
+      <button type="button" id="lock" class="btn">Kunci</button>
+    </div>
+    <div class="tools">
+      <label for="q" class="sr">Cari akun</label>
+      <input id="q" type="search" placeholder="Cari platform atau username" autocomplete="off">
+      <label for="cat" class="sr">Filter kategori</label>
+      <select id="cat"></select>
+    </div>
+    <p id="count" class="muted" aria-live="polite"></p>
+    <ul id="cards" class="cards"></ul>
+    <div id="empty" class="empty" hidden><p id="empty-title"></p><p id="empty-body" class="muted"></p></div>
+  </section>
+</main>
+<p id="toast" class="toast" role="status" aria-live="polite" hidden></p>
+
+<script>
+'use strict';
+
+const FORMAT = 'VaultKeep';
+const VERSION = 1;
+const AAD = new TextEncoder().encode('VaultKeep:v1');
+const IDLE_MS = 5 * 60 * 1000;
+const CLIP_CLEAR_MS = 30000;
+const $ = (id) => document.getElementById(id);
+
+let fileText = null;
+let accounts = [];
+let query = '';
+let category = 'all';
+const revealed = new Set();
+let idleTimer = null;
+let toastTimer = null;
+let clipTimer = null;
+
+function b64ToBytes(b64) {
+  const bin = atob(b64);
+  const out = new Uint8Array(bin.length);
+  for (let i = 0; i < bin.length; i += 1) out[i] = bin.charCodeAt(i);
+  return out;
+}
+
+class FormatError extends Error {}
+class PasswordError extends Error {}
+
+async function decryptVault(envelopeText, password) {
+  if (!window.crypto || !crypto.subtle) throw new FormatError('Browser ini tidak mendukung Web Crypto. Buka lewat Chrome atau Firefox terbaru.');
+  let env;
+  try { env = JSON.parse(envelopeText); } catch { throw new FormatError('File ini bukan JSON yang valid.'); }
+  if (!env || env.app !== FORMAT || env.version !== VERSION || env.cipher !== 'AES-256-GCM' || env.kdf !== 'PBKDF2-SHA-256') {
+    throw new FormatError('File ini bukan vault.json buatan Vault Keep, atau versinya tidak didukung.');
+  }
+  if (!Number.isInteger(env.iterations) || env.iterations < 100000 || env.iterations > 1500000) {
+    throw new FormatError('Parameter keamanan di file tidak valid.');
+  }
+  let salt, iv, data;
+  try { salt = b64ToBytes(env.salt); iv = b64ToBytes(env.iv); data = b64ToBytes(env.ciphertext); }
+  catch { throw new FormatError('Isi vault.json rusak.'); }
+  if (salt.length !== 16 || iv.length !== 12 || data.length <= 16) throw new FormatError('Struktur vault.json tidak valid.');
+
+  const material = await crypto.subtle.importKey('raw', new TextEncoder().encode(password), 'PBKDF2', false, ['deriveKey']);
+  const key = await crypto.subtle.deriveKey(
+    { name: 'PBKDF2', salt, iterations: env.iterations, hash: 'SHA-256' },
+    material, { name: 'AES-GCM', length: 256 }, false, ['decrypt']
+  );
+  let plain;
+  try {
+    plain = await crypto.subtle.decrypt({ name: 'AES-GCM', iv, additionalData: AAD, tagLength: 128 }, key, data);
+  } catch { throw new PasswordError(); }
+  const vault = JSON.parse(new TextDecoder().decode(plain));
+  if (!vault || vault.schemaVersion !== 1 || !Array.isArray(vault.accounts)) throw new FormatError('Struktur data di dalam vault tidak valid.');
+  return vault.accounts;
+}
+
+function gateError(msg) {
+  const el = $('gate-error');
+  el.textContent = msg || '';
+  el.hidden = !msg;
+}
+
+async function submitGate(event) {
+  event.preventDefault();
+  gateError('');
+  if (fileText === null) return gateError('Pilih file vault.json dulu.');
+  const password = $('pass').value;
+  if (!password) return gateError('Master password wajib diisi.');
+  const button = $('open');
+  button.disabled = true;
+  button.textContent = 'Membuka...';
+  // Yield once so the button label paints before the heavy key derivation starts.
+  await new Promise((r) => setTimeout(r, 30));
+  try {
+    accounts = await decryptVault(fileText, password);
+    $('pass').value = '';
+    enterApp();
+  } catch (err) {
+    if (err instanceof PasswordError) gateError('Master password salah, atau file sudah diubah.');
+    else if (err instanceof FormatError) gateError(err.message);
+    else gateError('Gagal membuka vault. Coba pilih file lagi.');
+  } finally {
+    button.disabled = false;
+    button.textContent = 'Buka vault';
+  }
+}
+
+function enterApp() {
+  query = '';
+  category = 'all';
+  revealed.clear();
+  $('q').value = '';
+  const cats = [...new Set(accounts.map((a) => a.category).filter(Boolean))].sort();
+  const sel = $('cat');
+  sel.replaceChildren(new Option('Semua kategori', 'all'));
+  cats.forEach((c) => sel.append(new Option(c, c)));
+  $('gate').hidden = true;
+  $('app').hidden = false;
+  render();
+  bumpIdle();
+  window.scrollTo(0, 0);
+}
+
+function lock(message) {
+  clearTimeout(idleTimer);
+  accounts = [];
+  fileText = null;
+  revealed.clear();
+  $('cards').replaceChildren();
+  $('app').hidden = true;
+  $('gate').hidden = false;
+  $('file').value = '';
+  $('file-name').textContent = 'Pilih file vault.json';
+  $('pass').value = '';
+  gateError(message || '');
+}
+
+function bumpIdle() {
+  clearTimeout(idleTimer);
+  idleTimer = setTimeout(() => lock('Terkunci otomatis karena tidak aktif. Pilih file dan masukkan password lagi.'), IDLE_MS);
+}
+
+function visible() {
+  const q = query.trim().toLowerCase();
+  return accounts
+    .filter((a) => category === 'all' || a.category === category)
+    .filter((a) => !q || [a.platform, a.username, a.url, a.notes].some((v) => (v || '').toLowerCase().includes(q)))
+    .sort((a, b) => String(a.platform).localeCompare(String(b.platform), 'id', { sensitivity: 'base' }));
+}
+
+function el(tag, className, text) {
+  const node = document.createElement(tag);
+  if (className) node.className = className;
+  if (text !== undefined) node.textContent = text;
+  return node;
+}
+
+function render() {
+  const list = visible();
+  const ul = $('cards');
+  ul.replaceChildren();
+  list.forEach((a) => {
+    const li = el('li');
+    const card = el('article', 'acct');
+    card.append(el('h2', '', a.platform));
+    card.append(el('p', 'who', a.username || 'Tanpa username'));
+    if (a.category) card.append(el('p', 'cat', a.category));
+    const shown = revealed.has(a.id);
+    card.append(el('p', 'pw', shown ? a.password : '•'.repeat(Math.min(a.password.length, 14))));
+
+    const btns = el('div', 'btns');
+    const reveal = el('button', 'btn', shown ? 'Sembunyi' : 'Lihat');
+    reveal.type = 'button';
+    reveal.setAttribute('aria-pressed', String(shown));
+    reveal.setAttribute('aria-label', `${shown ? 'Sembunyikan' : 'Lihat'} password ${a.platform}`);
+    reveal.addEventListener('click', () => { shown ? revealed.delete(a.id) : revealed.add(a.id); render(); });
+    const copyPw = el('button', 'btn main', 'Salin');
+    copyPw.type = 'button';
+    copyPw.setAttribute('aria-label', `Salin password ${a.platform}`);
+    copyPw.addEventListener('click', () => copy(a.password, 'Password'));
+    const copyUser = el('button', 'btn', 'User');
+    copyUser.type = 'button';
+    copyUser.disabled = !a.username;
+    copyUser.setAttribute('aria-label', `Salin username ${a.platform}`);
+    copyUser.addEventListener('click', () => copy(a.username, 'Username'));
+    btns.append(reveal, copyPw, copyUser);
+    card.append(btns);
+
+    if (a.url || a.notes) {
+      const extra = el('div', 'extra');
+      if (a.url) {
+        if (/^https?:\/\//i.test(a.url)) {
+          const p = el('p');
+          const link = el('a', '', a.url);
+          link.href = a.url;
+          link.target = '_blank';
+          link.rel = 'noopener noreferrer';
+          p.append(link);
+          extra.append(p);
+        } else {
+          extra.append(el('p', '', a.url));
+        }
+      }
+      if (a.notes) extra.append(el('p', 'notes muted', a.notes));
+      card.append(extra);
+    }
+    li.append(card);
+    ul.append(li);
+  });
+
+  $('count').textContent = accounts.length ? `${list.length} dari ${accounts.length} akun` : '';
+  $('empty').hidden = list.length > 0;
+  if (!list.length) {
+    $('empty-title').textContent = accounts.length ? 'Tidak ada akun yang cocok.' : 'Vault ini belum berisi akun.';
+    $('empty-body').textContent = accounts.length ? 'Ubah kata kunci atau pilih kategori lain.' : 'Tambah akun lewat mode localhost, lalu bawa vault.json yang baru ke sini.';
+  }
+}
+
+async function copy(text, label) {
+  bumpIdle();
+  let ok = false;
+  try { await navigator.clipboard.writeText(text); ok = true; } catch { ok = legacyCopy(text); }
+  if (!ok) return toast('Gagal menyalin. Tekan Lihat lalu salin manual.');
+  toast(`${label} disalin. Clipboard dikosongkan dalam 30 detik.`);
+  clearTimeout(clipTimer);
+  clipTimer = setTimeout(async () => {
+    try { if ((await navigator.clipboard.readText()) === text) await navigator.clipboard.writeText(''); } catch { /* Clipboard read can be blocked. */ }
+  }, CLIP_CLEAR_MS);
+}
+
+function legacyCopy(text) {
+  const area = document.createElement('textarea');
+  area.value = text;
+  area.setAttribute('readonly', '');
+  area.className = 'sr';
+  document.body.append(area);
+  area.select();
+  let ok = false;
+  try { ok = document.execCommand('copy'); } catch { ok = false; }
+  area.remove();
+  return ok;
+}
+
+function toast(message) {
+  const t = $('toast');
+  t.textContent = message;
+  t.hidden = false;
+  clearTimeout(toastTimer);
+  toastTimer = setTimeout(() => { t.hidden = true; }, 3500);
+}
+
+$('file').addEventListener('change', async (e) => {
+  gateError('');
+  const file = e.target.files[0];
+  if (!file) { fileText = null; $('file-name').textContent = 'Pilih file vault.json'; return; }
+  if (file.size > 5 * 1024 * 1024) { fileText = null; return gateError('File terlalu besar untuk vault.json.'); }
+  try {
+    fileText = await file.text();
+    $('file-name').textContent = file.name;
+  } catch {
+    fileText = null;
+    gateError('File tidak bisa dibaca. Pilih ulang.');
+  }
+});
+$('gate-form').addEventListener('submit', submitGate);
+$('show-pass').addEventListener('change', (e) => { $('pass').type = e.target.checked ? 'text' : 'password'; });
+$('q').addEventListener('input', (e) => { query = e.target.value; render(); bumpIdle(); });
+$('cat').addEventListener('change', (e) => { category = e.target.value; render(); bumpIdle(); });
+$('lock').addEventListener('click', () => lock(''));
+['pointerdown', 'keydown', 'scroll'].forEach((ev) => document.addEventListener(ev, () => { if (!$('app').hidden) bumpIdle(); }, { passive: true }));
+</script>
+</body>
+</html>
