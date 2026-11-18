@@ -1,0 +1,14 @@
+{
+  "name": "vault-keep",
+  "version": "1.0.0",
+  "description": "Password manager lokal: satu vault.json terenkripsi, dikelola lewat localhost atau dibuka lewat HTML portable.",
+  "private": true,
+  "type": "module",
+  "engines": {
+    "node": ">=18"
+  },
+  "scripts": {
+    "start": "node server/index.js",
+    "dev": "node --watch server/index.js"
+  }
+}
